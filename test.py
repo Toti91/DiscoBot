@@ -9,26 +9,22 @@ import datetime
 import asyncio
 from secret import Secret
 
-s = Secret()
-pw = s.getMoviePw()
+r = requests.get("http://apis.is/weather/observations/is?stations=1,422,990")
 
-r = requests.post("http://api.kvikmyndir.is/authenticate", data={"username": "TotiGunn", "password": pw})
-result = r.json()
-token = result["token"]
+if r.status_code == 200:
+    result = r.json()
 
-r2 = requests.get("http://api.kvikmyndir.is/movies", headers={"x-access-token": token})
-movies = r2.json()
+    rey = result["results"][0]
+    ak = result["results"][1]
+    kef = result["results"][2]
+    reykjavik = "``` " + rey["T"] + " °C í Reykjavík" + "```"
+    akureyri = "``` " + ak["T"] + " °C á Akureyri" + "```"
+    keflavik = "``` " + kef["T"] + " °C í Keflavík" + "```"
 
-#print(movies)
+    print(reykjavik)
+    print(akureyri)
+    print(keflavik)
 
-for i in movies:
-    print(i["title"])
-    for j in i["showtimes"]:
-        print(j["cinema"]["name"])
-        for x in j["schedule"]:
-            print(x["time"])
-    print(" ")
-    print("-------------")
 
 
 
