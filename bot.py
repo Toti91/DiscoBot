@@ -297,9 +297,10 @@ async def bæ(ctx):
     else:
         await bot.say("Einungis <@" + me + "> má slökkva á mér.")
 
-@bot.command(description="Nær í næstu leiki tiltekins lið í enska")
-async def enski(lið: str, leikir: int=1):
-    """Nær í næsta leik/leiki hjá tilteknu liði, t.d: !enski arsenal 5"""
+@bot.command(description="Nær í næstu leiki tiltekins lið í enska eða leiki næstu viku ef slept er að setja inn lið")
+async def enski(lið: str="", leikir: int=1):
+    """Nær í næsta leik/leiki hjá tilteknu liði, t.d: !enski arsenal 5 --
+    eða leiki næstu viku, t.d.: !enski"""
 
     r = requests.get("http://www.football-data.org/v1/competitions/445/fixtures",
                      headers={"X-Response-Control": "minified"})
@@ -309,6 +310,27 @@ async def enski(lið: str, leikir: int=1):
 
     if r.status_code == 200:
         result = r.json()
+
+        if not lið:
+            u = datetime.datetime.now()
+            d = datetime.timedelta(days=7)
+            weekfromnow = u + d
+            string = ""
+            fmt = "%Y-%m-%dT%H:%M:%SZ"
+
+            for i in result["fixtures"]:
+                if (datetime.datetime.strptime(i["date"], fmt) > datetime.datetime.now()
+                and datetime.datetime.strptime(i["date"], fmt) < weekfromnow):
+                    d = datetime.datetime.strptime(i["date"], fmt)
+                    string += ("```" + "\n" + d.strftime("%B %d, %Y") + " - " + d.strftime("%H:%M") + "\n"
+                                + i["homeTeamName"] + " - " + i["awayTeamName"] + "\n" + "```")
+
+            if string:
+                await bot.say(string)
+                return
+            else:
+                await bot.say("Fann enga leiki á næstu viku.")
+                return
 
         # edge cases
         if lið.lower() == "man" or lið.lower() == "united" or lið.lower() == "manu":
@@ -395,9 +417,13 @@ async def stream(streamer: str):
     else:
         await bot.say("Náði ekki sambandi við API")
 
-@bot.command(description="Hvað er í bíó?")
-async def bíó():
-    """Nær í hvaða myndir eru í bíó"""
+@bot.command(description="Er <mynd> í bíó?")
+async def bíó(*mynd: str):
+    """Er <mynd> í bíó?"""
+
+    if not mynd:
+        await bot.say("Vantar mynd, t.d: !bíó Dunkirk")
+        return
 
     pw = s.getMoviePw()
     r = requests.post("http://api.kvikmyndir.is/authenticate", data={"username": "TotiGunn", "password": pw})
@@ -408,20 +434,32 @@ async def bíó():
 
         r2 = requests.get("http://api.kvikmyndir.is/movies", headers={"x-access-token": token})
         movies = r2.json()
+        found = False
+        m = " ".join(mynd)
 
         for i in movies:
-            em = discord.Embed(color=0xe67e22)
-            em.title = i["title"]
+            if i["title"].lower() == m.lower() or i["title"].lower() in m.lower():
+                found = True
+                em = discord.Embed(color=0xe67e22)
+                em.title = i["title"] + " (trailer)"
+                em.set_image(url=i["poster"])
 
-            if i["trailers"]:
-                if i["trailers"][0]["results"]:
-                    tr = i["trailers"][0]["results"][0]["url"]
-                    em.url = tr
+                if i["trailers"]:
+                    if i["trailers"][0]["results"]:
+                        tr = i["trailers"][0]["results"][0]["url"]
+                        em.url = tr
 
-            for j in i["showtimes"]:
-                em.add_field(name=j["cinema"]["name"], value=", ".join([x["time"] for x in j["schedule"]]))
+                for j in i["showtimes"]:
+                    em.add_field(name=j["cinema"]["name"], value=", ".join([x["time"] for x in j["schedule"]]))
 
-            await bot.say(embed=em)
+                footer = "IMDB: " + i["ratings"]["imdb"] + ", Rotten Tomatoes: " + i["ratings"]["rotten_critics"]
+                em.set_footer(text=footer)
+
+        if not found:
+            await bot.say(m + " er ekki í bíó :(")
+            return
+
+        await bot.say(embed=em)
     else:
         await bot.say("Náði ekki sambandi við API")
 
