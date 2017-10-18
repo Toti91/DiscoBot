@@ -43,77 +43,58 @@ async def veður():
     else:
         await bot.say("Náði ekki sambandi við API")
 
-@bot.command(description="Næstu leikir Keflavíkur")
-async def keflavík():
-    """Næstu leikir Keflavíkur, meistaraflokkur karla og kvenna"""
-
+def getSoccer(team: str):
     r = requests.get("http://apis.is/sports/football")
+    string = ""
 
     if r.status_code == 200:
         result = r.json()
         final = result["results"]
         final = sorted(final, key=lambda k: k['counter'])
 
-        string = ""
         deildir = ["Inkasso-deildin", "Pepsi-deild karla", "Meistaradeild UEFA", "Borgunarbikar karla"]
         kvenna = ["1. deild kvenna", "Pepsi-deild kvenna"]
 
         for i in range(len(final)):
             for key, value in final[i].items():
-                if value == "Keflavík":
-                    if final[i]["tournament"] in deildir: # ```fix = yellow
+                if str(value).lower() == team.lower():
+                    if final[i]["tournament"] in deildir or team.lower() == "ísland":
                         string += ("```fix" + "\n" + "Deild: " + final[i]["tournament"] + "\n"
-                                    + final[i]["date"] + " kl: " + final[i]["time"] + "\n" + final[i]["homeTeam"]
-                                    + " - " + final[i]["awayTeam"] + "\n" + "Staðsetning: " + final[i]["location"]
-                                    + "\n" + "\n" + "```")
+                                   + final[i]["date"] + " kl: " + final[i]["time"] + "\n" + final[i]["homeTeam"]
+                                   + " - " + final[i]["awayTeam"] + "\n" + "Staðsetning: " + final[i]["location"]
+                                   + "\n" + "\n" + "```")
                     elif final[i]["tournament"] in kvenna:
                         string += ("```" + "\n" + "Deild: " + final[i]["tournament"] + "\n"
-                                    + final[i]["date"] + " kl: " + final[i]["time"] + "\n" + final[i]["homeTeam"]
-                                    + " - " + final[i]["awayTeam"] + "\n" + "Staðsetning: " + final[i]["location"]
-                                    + "\n" + "\n" + "```")
+                                   + final[i]["date"] + " kl: " + final[i]["time"] + "\n" + final[i]["homeTeam"]
+                                   + " - " + final[i]["awayTeam"] + "\n" + "Staðsetning: " + final[i]["location"]
+                                   + "\n" + "\n" + "```")
 
-        if not string:
-            await bot.say("Fann enga leiki með Keflavík á næstu dögum.")
-        else:
-            await bot.say(string)
+        return string
     else:
-        await bot.say("Náði ekki sambandi við API")
+        string = "Náði ekki sambandi við API"
+        return string
+
+@bot.command(description="Næstu leikir Keflavíkur")
+async def keflavík():
+    """Næstu leikir Keflavíkur, meistaraflokkur karla og kvenna"""
+
+    string = getSoccer("keflavík")
+
+    if not string:
+        await bot.say("Fann enga leiki með Keflavík á næstu dögum.")
+    else:
+        await bot.say(string)
 
 @bot.command(description="Næstu leikir tiltekins liðs")
 async def fótbolti(lið: str):
     """Næstu leikir tiltekins liðs, t.d !fótbolti íbv"""
 
-    r = requests.get("http://apis.is/sports/football")
+    string = getSoccer(lið)
 
-    if r.status_code == 200:
-        result = r.json()
-        final = result["results"]
-        final = sorted(final, key=lambda k: k['counter'])
-
-        string = ""
-        deildir = ["Inkasso-deildin", "Pepsi-deild karla", "Meistaradeild UEFA", "Borgunarbikar karla"]
-        kvenna = ["1. deild kvenna", "Pepsi-deild kvenna"]
-
-        for i in range(len(final)):
-            for key, value in final[i].items():
-                if str(value).lower() == lið.lower():
-                    if final[i]["tournament"] in deildir:
-                        string += ("```fix" + "\n" + "Deild: " + final[i]["tournament"] + "\n"
-                                    + final[i]["date"] + " kl: " + final[i]["time"] + "\n" + final[i]["homeTeam"]
-                                    + " - " + final[i]["awayTeam"] + "\n" + "Staðsetning: " + final[i]["location"]
-                                    + "\n" + "\n" + "```")
-                    elif final[i]["tournament"] in kvenna:
-                        string += ("```" + "\n" + "Deild: " + final[i]["tournament"] + "\n"
-                                    + final[i]["date"] + " kl: " + final[i]["time"] + "\n" + final[i]["homeTeam"]
-                                    + " - " + final[i]["awayTeam"] + "\n" + "Staðsetning: " + final[i]["location"]
-                                    + "\n" + "\n" + "```")
-
-        if not string:
-            await bot.say("Fann enga leiki með " + lið.title() + " á næstu dögum.")
-        else:
-            await bot.say(string)
+    if not string:
+        await bot.say("Fann enga leiki með " + lið.title() + " á næstu dögum.")
     else:
-        await bot.say("Náði ekki sambandi við API")
+        await bot.say(string)
 
 @bot.command(description="Nær í gif af giphy útfrá keywordi")
 async def gif(*keywords: str):
@@ -366,56 +347,49 @@ async def enski(lið: str="", leikir: int=1):
     else:
         await bot.say("Náði ekki sambandi við API")
 
-@bot.command(description="Er Tommi að streama?")
-async def ertommiaðstreama():
-    """Checkar hvort Tommi er að streama"""
 
-    cid = s.getTwitchKey()
-    r = requests.get("https://api.twitch.tv/kraken/streams?channel=qwaaag&client_id=" + cid)
-
-    if r.status_code == 200:
-        result = r.json()
-
-        if result["streams"]:
-            game = result["streams"][0]["game"]
-            viewers = str(result["streams"][0]["viewers"])
-
-            em = discord.Embed(color=0xe67e22)
-            em.title = "Tommi er live! Smelltu hér til að horfa!"
-            em.url = "https://www.twitch.tv/qwaaag"
-            em.description = "Hann er að spila " + game + " og það eru " + viewers + " manns að horfa."
-
-            await bot.say(embed=em)
-        else:
-            await bot.say("Nei, Tommi er ekki að streama.")
-    else:
-        await bot.say("Náði ekki sambandi við API")
-
-@bot.command(description="Er <streamer> að spila?")
-async def stream(streamer: str):
-    """Checkar hvort <streamer> er að streama"""
-
+def twitch(streamer: str):
     cid = s.getTwitchKey()
     lower = streamer.lower()
     r = requests.get("https://api.twitch.tv/kraken/streams?channel=" + lower + "&client_id=" + cid)
 
     if r.status_code == 200:
         result = r.json()
+        em = discord.Embed(color=0xe67e22)
 
         if result["streams"]:
             game = result["streams"][0]["game"]
             viewers = str(result["streams"][0]["viewers"])
 
-            em = discord.Embed(color=0xe67e22)
             em.title = streamer + " er live! Smelltu hér til að horfa!"
             em.url = "https://www.twitch.tv/" + lower
             em.description = "Hann er að spila " + game + " og það eru " + viewers + " manns að horfa."
 
-            await bot.say(embed=em)
+            return em
         else:
-            await bot.say("Nei, " + streamer + " er ekki að streama.")
+            em.title = "NOPE"
+            em.description = streamer + " er ekki að streama"
+
+            return em
     else:
-        await bot.say("Náði ekki sambandi við API")
+        print("Náði ekki sambandi við API")
+
+@bot.command(description="Er Tommi að streama?")
+async def ertommiaðstreama():
+    """Checkar hvort Tommi er að streama"""
+
+    em = twitch("QWAAAG")
+
+    await bot.say(embed=em)
+
+
+@bot.command(description="Er <streamer> að spila?")
+async def stream(streamer: str):
+    """Checkar hvort <streamer> er að streama"""
+
+    em = twitch(streamer)
+
+    await bot.say(embed=em)
 
 @bot.command(description="Er <mynd> í bíó?")
 async def bíó(*mynd: str):
@@ -435,7 +409,30 @@ async def bíó(*mynd: str):
         r2 = requests.get("http://api.kvikmyndir.is/movies", headers={"x-access-token": token})
         movies = r2.json()
         found = False
-        m = " ".join(mynd)
+        kvikmyndahus = ["smárabíó", "laugarásbíó", "álfabakki", "borgarbíó", "egilshöll", "háskóalbíó",
+                        "sambíóin, akureyri", "bíó paradís", "sambíóin, keflavík", "kringlubíó"]
+
+        if " ".join(mynd).lower() == "keflavík" or " ".join(mynd).lower() == "keflavik":
+            m = "sambíóin, keflavík"
+        elif " ".join(mynd).lower() == "smárabíó" or " ".join(mynd).lower() == "smarabio":
+            m = "smárabíó"
+        elif " ".join(mynd).lower() == "kringlan":
+            m = "kringlubíó"
+        else:
+            m = " ".join(mynd)
+
+        if m.lower() in kvikmyndahus:
+            em = discord.Embed(color=0xe67e22)
+            em.title = m.title()
+            em.url = "https://midi.is/"
+            for i in movies:
+                for j in i["showtimes"]:
+                    if j["cinema"]["name"].lower() == m:
+                        em.add_field(name=i["title"], value=", ".join([x["time"] for x in j["schedule"]]))
+
+            await bot.say(embed=em)
+            return
+
 
         for i in movies:
             if i["title"].lower() == m.lower() or i["title"].lower() in m.lower():
