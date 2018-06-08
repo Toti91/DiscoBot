@@ -21,7 +21,7 @@ class General:
         """Reynir að finna gif útfrá keywordi, t.d !gif dog"""
 
         if not keywords:
-            await bot.say("Vantar keyword t.d. !gif hitler")
+            await self.bot.say("Vantar keyword t.d. !gif hitler")
             return
 
         key = self.s.getGiphyKey()
