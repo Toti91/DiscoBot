@@ -6,9 +6,9 @@
    
 ### This code uses a few API keys which are hidden from this repository, 
 ### so following commands wont work unless you update code with your own keys:
-> !gif
-> !grín
-> !trailer
-> !bæ
-> !twitch
-> !bíó
+* !gif
+* !grín
+* !trailer
+* !bæ
+* !twitch
+* !bíó
