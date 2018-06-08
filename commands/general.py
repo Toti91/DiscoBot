@@ -21,7 +21,7 @@ class General:
         """Reynir að finna gif útfrá keywordi, t.d !gif dog"""
 
         if not keywords:
-            await self.bot.say("Vantar keyword t.d. !gif hitler")
+            await self.bot.say("Vantar keyword t.d. !gif dog")
             return
 
         key = self.s.getGiphyKey()
@@ -36,7 +36,7 @@ class General:
             if final:
                 await self.bot.say(final["embed_url"])
             else:
-                await self.bot.say("Úbbs ég kúkaði á mig og fann ekkert.")
+                await self.bot.say("Úbbs fann ekkert gif.")
         else:
             await self.bot.say("Náði ekki sambandi við API")
 
