@@ -12,3 +12,4 @@ so following commands wont work unless you update the file with your own keys:__
 * !bæ
 * !twitch
 * !bíó
+* !votekick
