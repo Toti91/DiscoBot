@@ -179,7 +179,7 @@ class General:
             found = False
 
             for i in movies:
-                if i["title"].lower() == m.lower() or i["title"].lower() in m.lower():
+                if i["title"].lower() == m.lower() or m.lower() in i["title"].lower():
                     found = True
                     em = discord.Embed(color=0xe67e22)
                     em.title = i["title"] + " (trailer)"
@@ -195,6 +195,7 @@ class General:
 
                     footer = "IMDB: " + i["ratings"]["imdb"] + ", Rotten Tomatoes: " + i["ratings"]["rotten_critics"]
                     em.set_footer(text=footer)
+                    break
 
             if not found:
                 await self.bot.say(m + " er ekki í bíó :(")
