@@ -9,6 +9,7 @@ class Secret:
                 "password": "Your Reddit password",
                 "username": "Your Reddit username",
                 "userAgent": "Your Reddit useragent"}
+    afk = "Your AFK channel ID (Channel to kick users to)"
 
     def getToken(self):
         return self.token
@@ -26,5 +27,8 @@ class Secret:
         return self.twitch
 
     def getMoviePw(self):
-        return self.movies;
+        return self.movies
+
+    def getAfkChannel(self):
+        return self.afk
 

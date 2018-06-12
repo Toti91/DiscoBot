@@ -46,7 +46,7 @@ class Mod:
             member = member or ctx.message.author
 
             timeout = 15
-            afk = self.bot.get_channel("190620892991193088") # Channel id á AFK rás
+            afk = self.bot.get_channel(self.s.getAfkChannel()) # Channel id á AFK rás
             msg = "Viljið þið kicka <@" + str(member.id) + ">? Reactið með 👍 eða 👎, þið hafið " + str(timeout) + " sek."
             
             reply = await self.bot.say(msg)
